@@ -2,42 +2,49 @@ const nodemailer = require('nodemailer');
 
 // Tạo transporter Gmail
 
+
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // TLS
+  service: 'gmail',
   auth: {
     user: process.env.SMTP_USER,
     pass: (process.env.SMTP_PASS || '').replace(/\s+/g, ''),
   },
-  tls: {
-    rejectUnauthorized: false, // 🔥 FIX lỗi self-signed certificate
-  },
+  // Gmail STARTTLS
+  secure: false,
+  requireTLS: true,
+
+  // timeout để khỏi treo startup
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
 });
+
 
 // Verify khi start server
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ SMTP config error:', err.message);
-  } else {
-    console.log('✅ SMTP server is ready to send emails');
-  }
-});
+//transporter.verify((err) => {
+//  if (err) {
+//    console.error('❌ SMTP config error:', err.message);
+ // } else {
+ //   console.log('✅ SMTP server is ready to send emails');
+ // }
+//});
 
 async function sendOtpEmail(toEmail, otp) {
-  await transporter.sendMail({
-    from: `"JEBus Support" <${process.env.SMTP_USER}>`,
-    to: toEmail,
-    subject: 'JEBus - Mã xác minh OTP',
-    html: `
-      <div style="font-family: Arial, sans-serif">
-        <h2 style="color:#EB2188">JEBus - Xác minh tài khoản</h2>
-        <p>Mã OTP của bạn là:</p>
-        <h1 style="letter-spacing:4px">${otp}</h1>
-        <p>Mã có hiệu lực trong <b>5 phút</b>.</p>
-      </div>
-    `,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"JEBus Support" <${process.env.SMTP_USER}>`,
+      to: toEmail,
+      subject: 'JEBus - Mã xác minh OTP',
+      html: `
+        <h2>JEBus OTP</h2>
+        <h1>${otp}</h1>
+      `,
+    });
+  } catch (err) {
+    console.warn('⚠️ SMTP send skipped:', err.message);
+    // không throw -> backend không chết
+  }
 }
+
 
 module.exports = { sendOtpEmail };
