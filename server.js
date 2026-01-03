@@ -22,8 +22,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
 app.get("/", (req, res) => res.status(200).send("JEbus backend OK"));
+app.get("/health", (req, res) => res.status(200).json({ ok: true }));
+
+
 
 
 app.use('/api/auth', authRoutes);
@@ -35,9 +37,10 @@ app.use("/api/trips", seatBookingRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-console.log("PORT =", process.env.PORT);
-console.log("DB_HOST =", process.env.DB_HOST);
-console.log("DB_NAME =", process.env.DB_NAME);
+console.log("MYSQLHOST =", process.env.MYSQLHOST);
+console.log("MYSQLDATABASE =", process.env.MYSQLDATABASE);
+console.log("MYSQLPORT =", process.env.MYSQLPORT);
+
 console.log("JWT_SECRET exists =", Boolean(process.env.JWT_SECRET));
 
 
